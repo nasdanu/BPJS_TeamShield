@@ -1,0 +1,219 @@
+# import semua libray yang dibutuhkan
+import pandas as pd
+import numpy as np
+
+import pyreadstat as prs
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+
+# =================
+
+# Variable (Column) label definition sesuai Excel Metadata
+
+labels = {
+    'PSTV01': 'Nomor peserta',
+    'PSTV02': 'Nomor keluarga',
+    'PSTV03': 'Tanggal lahir peserta',
+    'PSTV04': 'Hubungan Keluarga',
+    'PSTV05': 'Jenis Kelamin',
+    'PSTV06': 'Status perkawinan',
+    'PSTV07': 'Kelas rawat',
+    'PSTV08': 'Segmentasi peserta',
+    'PSTV09': 'Provinsi Tempat Tinggal Peserta',
+    'PSTV10': 'Kabupaten/Kota Tempat Tinggal Peserta',
+    'PSTV11': 'Kepemilikan faskes',
+    'PSTV12': 'Jenis faskes',
+    'PSTV13': 'Provinsi Fasilitas Kesehatan Peserta Terdaftar',
+    'PSTV14': 'Kabupaten/Kota Fasilitas Kesehatan Peserta Terdaftar',
+    'PSTV15': 'Bobot',
+    'PSTV16': 'Tahun Sampel',
+    'PSTV17': 'Status Kepesertaan',
+    'PSTV18': 'Tahun Meninggal',
+
+    'FKP02': 'ID Kunjungan FKTP',
+    'FKP03': 'Tanggal datang kunjungan FKTP',
+    'FKP04': 'Tanggal pulang kunjungan FKTP',
+    'FKP05': 'Provinsi FKTP',
+    'FKP06': 'Kabupaten/Kota FKTP',
+    'FKP07': 'Kepemilikan FKTP',
+    'FKP08': 'Jenis FKTP',
+    'FKP09': 'Tipe FKTP',
+    'FKP10': 'Tingkat Pelayanan FKTP',
+    'FKP11': 'Jenis Poli FKTP',
+    'FKP12': 'Segmen Peserta saat akses layanan FKTP',
+    'FKP13': 'Status Pulang peserta',
+    'FKP14': 'Kode dan nama diagnosis ICD 10 (3 digit)',
+    'FKP14A': 'Kode diagnosis ICD 10 (3 digit)',
+    'FKP15': 'Kode diagnosis (beragam 3-5 digit)',
+    'FKP15A': 'Nama diagnosis berasal dari kode diagnosis FKP15',
+    'FKP16': 'Provinsi faskes tujuan rujukan',
+    'FKP17': 'Kabupaten/Kota faskes tujuan rujukan',
+    'FKP18': 'Kepemilikan faskes tujuan rujukan',
+    'FKP19': 'Jenis faskes tujuan rujukan',
+    'FKP20': 'Tipe faskes tujuan rujukan',
+    'FKP21': 'Poli faskes tujuan rujukan',
+    'FKP22': 'Jenis Kunjungan FKTP',
+
+    'FKP02': 'No Asal Rujukan (ID Kunjungan FKTP)',
+    'FKL02': 'ID Kunjungan',
+    'FKL03': 'Tanggal datang kunjungan FKRTL',
+    'FKL04': 'Tanggal pulang kunjungan FKRTL',
+    'FKL05': 'Provinsi FKRTL',
+    'FKL06': 'Kabupaten/Kota FKRTL',
+    'FKL07': 'Kepemilikan FKRTL',
+    'FKL08': 'Jenis FKRTL',
+    'FKL09': 'Tipe FKRTL',
+    'FKL10': 'Tingkat Pelayanan FKRTL',
+    'FKL11': 'Jenis Poli FKRTL',
+    'FKL12': 'Segmen Peserta saat akses layanan FKRTL',
+    'FKL13': 'Kelas iuran premi peserta saat akses layanan FKRTL',
+    'FKL14': 'Status pulang dari FKRTL',
+    'FKL15': 'Kode dan nama diagnosis masuk ICD 10 (3 digit)',
+    'FKL15A': 'Kode diagnosis masuk ICD 10 (3 digit)',
+    'FKL16': 'Kode ICD 10 diagnosis masuk FKRTL (3-6digit)',
+    'FKL16A': 'Nama diagnosis masuk FKRTL (3-6digit)',
+    'FKL17': 'Kode dan nama diagnosis primer ICD 10 (3 digit)',
+    'FKL17A': 'Kode diagnosis primer ICD 10 (3 digit)',
+    'FKL18': 'Kode ICD 10 diagnosis primer FKRTL (3-6digit)',
+    'FKL18A': 'Nama diagnosis primer FKRTL (3-6digit)',
+    'FKL19': 'Kode INACBGs',
+    'FKL19A': 'Deskripsi kode INACBGs',
+    'FKL20': 'INACBGs - Kode Casemix main groups (Digit ke-1)',
+    'FKL21': 'INACBGs - Tipe kelompok kasus atau case groups (Digit ke-2)',
+    'FKL22': 'INACBGs - Spesifikasi kelompok kasus (Digit ke-3)',
+    'FKL23': 'INACBGs - Tingkat keparahan kelompok kasus(Digit ke-4)',
+    'FKL25': 'Provinsi faskes perujuk',
+    'FKL26': 'Kabupaten/Kota faskes perujuk',
+    'FKL27': 'Kepemilikan faskes perujuk',
+    'FKL28': 'Jenis faskes perujuk',
+    'FKL29': 'Tipe faskes perujuk',
+    'FKL30': 'Jenis prosedur',
+    'FKL31': 'Tarif regional INACBGs',
+    'FKL32': 'Group Tarif INACBGs',
+    'FKL33': 'Kode special sub-acute groups (SA)',
+    'FKL34': 'Tarif special sub-acute groups (SA)',
+    'FKL35': 'Kode special procedures (SP)',
+    'FKL36': 'Deskripsi special procedures (SP)',
+    'FKL37': 'Tarif special procedures (SP)',
+    'FKL38': 'Kode special prosthesis (RR)',
+    'FKL39': 'Deskripsi special prosthesis (RR)',
+    'FKL40': 'Tarif special prosthesis (RR)',
+    'FKL41': 'Kode special investigation(SI)',
+    'FKL42': 'Deskripsi special investigation(SI)',
+    'FKL43': 'Tarif special investigation(SI)',
+    'FKL44': 'Kode special drugs (SD)',
+    'FKL45': 'Deskripsi special drugs (SD)',
+    'FKL46': 'Tarif special drugs (SD)',
+    'FKL47': 'Biaya Tagih - oleh fasilitas kesehatan (provider)',
+    'FKL48': 'Biaya Verifikasi - BPJS Kesehatan setelah dilakukan verifikasi',
+
+    'PNK02': 'ID Kunjungan',
+    'PNK03': 'Tanggal kunjungan',
+    'PNK04': 'Tanggal tindakan',
+    'PNK05': 'Tanggal pulang',
+    'PNK06': 'Provinsi faskes',
+    'PNK07': 'Kode Kab/Kota faskes',
+    'PNK08': 'Kepemilikan faskes',
+    'PNK09': 'Jenis faskes',
+    'PNK10': 'Tipe faskes',
+    'PNK11': 'Tingkat layanan',
+    'PNK12': 'Segmen peserta',
+    'PNK13': 'Kode dan Nama diagnosis berdasarkan ICD-10 (3 digit)',
+    'PNK13A': 'Kode diagnosis berdasarkan ICD-10 (3 digit)',
+    'PNK14': 'Kode diagnosis (3-5 digit)',
+    'PNK15': 'Nama Diagnosis',
+    'PNK16': 'Nama Tindakan',
+    'PNK17': 'Biaya tagih',
+    'PNK18': 'Biaya verifikasi'
+}
+
+# =================
+
+# loading DTA files & renaming labels: REGULER
+
+reg2021_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Reguler\2015202101_kepesertaan.dta")
+reg2021_kepesertaan = reg2021_kepesertaan.rename(columns=labels)
+
+reg2021_fkrtl = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Reguler\202103_fkrtl.dta")
+reg2021_fkrtl = reg2021_fkrtl.rename(columns=labels)
+
+reg2021_nonkapitasi = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Reguler\202104_nonkapitasi.dta")
+reg2021_nonkapitasi = reg2021_nonkapitasi.rename(columns=labels)
+
+reg2021_dxsekunder = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Reguler\202105_diagnosissekunder.dta")
+reg2021_dxsekunder = reg2021_dxsekunder.rename(columns=labels)
+
+
+# loading DTA files & renaming labels: KONTEKSTUAL DM
+
+dm2019_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2019_kepesertaan.dta")
+dm2019_kepesertaan = dm2019_kepesertaan.rename(columns=labels)
+
+dm2020_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2020_kepesertaan.dta")
+dm2020_kepesertaan = dm2020_kepesertaan.rename(columns=labels)
+
+dm2021_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2021_kepesertaan.dta")
+dm2021_kepesertaan = dm2021_kepesertaan.rename(columns=labels)
+
+dm2021_fkrtl = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2021_fkrtl.dta")
+dm2021_fkrtl = dm2021_fkrtl.rename(columns=labels)
+
+dm2021_fkrtldxsekunder = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2021_fkrtldxsekunder.dta")
+dm2021_fkrtldxsekunder = dm2021_fkrtldxsekunder.rename(columns=labels)
+
+dm2021_fktpkapitasi = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2021_fktpkapitasi.dta", convert_categoricals=False)
+dm2021_fktpkapitasi = dm2021_fktpkapitasi.rename(columns=labels)
+
+dm2021_fktpnonkapitasi = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual DM\DM2021_fktpnonkapitasi.dta")
+dm2021_fktpnonkapitasi = dm2021_fktpnonkapitasi.rename(columns=labels)
+
+
+# loading DTA files & renaming labels: KONTEKSTUAL TB
+
+tb20152021_fkrtl = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB20152021_fkrtl.dta")
+tb20152021_fkrtl = tb20152021_fkrtl.rename(columns=labels)
+
+tb20152021_fkrtldxsekunder = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB20152021_fkrtldxsekunder.dta")
+tb20152021_fkrtldxsekunder = tb20152021_fkrtldxsekunder.rename(columns=labels)
+
+tb20152021_fktpnonkapitasi = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB20152021_fktpnonkapitasi.dta")
+tb20152021_fktpnonkapitasi = tb20152021_fktpnonkapitasi.rename(columns=labels)
+
+tb2019_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB2019_kepesertaan.dta")
+tb2019_kepesertaan = tb2019_kepesertaan.rename(columns=labels)
+
+tb2019_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB2019_kepesertaan.dta")
+tb2019_kepesertaan = tb2019_kepesertaan.rename(columns=labels)
+
+tb2020_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB2020_kepesertaan.dta")
+tb2020_kepesertaan = tb2020_kepesertaan.rename(columns=labels)
+
+tb2021_kepesertaan = pd.read_stata(r"D:\Business\Healthkaton 2.0\Data Sampel Final 2022\Kontekstual TB\TB2021_kepesertaan.dta")
+tb2021_kepesertaan = tb2021_kepesertaan.rename(columns=labels)
+
+# =================
+
+# cek column labels: REGULER
+reg2021_kepesertaan.info()
+reg2021_fkrtl.info()
+reg2021_nonkapitasi.info()
+reg2021_dxsekunder.info()
+
+# cek column labels: KONTEKSTUAL DM
+dm2019_kepesertaan.info()
+dm2020_kepesertaan.info()
+dm2021_fkrtl.info()
+dm2021_fkrtldxsekunder.info()
+dm2021_fktpkapitasi.info()
+dm2021_fktpnonkapitasi.info()
+dm2021_kepesertaan.info()
+
+# cek column labels: KONTEKSTUAL TB
+tb20152021_fkrtl.info()
+tb20152021_fkrtldxsekunder.info()
+tb20152021_fktpnonkapitasi.info()
+tb2019_kepesertaan.info()
+tb2020_kepesertaan.info()
+tb2021_kepesertaan.info()
